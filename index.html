@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BakingLab Pro | Calculadora Panadera</title>
+    <title>BakingLab Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,9 +17,9 @@
             padding: 20px;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 2rem;
-            box-shadow: 0 10px 30px rgba(165, 92, 92, 0.05);
+            box-shadow: 0 10px 40px rgba(165, 92, 92, 0.06);
         }
         .input-minimal {
             background: #f9fafb;
@@ -46,7 +46,6 @@
             background-color: #fceaea;
             color: #a55c5c;
         }
-        /* Spinner */
         .loader {
             width: 20px;
             height: 20px;
@@ -57,6 +56,14 @@
             display: none;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Contenedor de la imagen del pan */
+        .bread-image {
+            max-width: 180px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
     </style>
 </head>
 <body>
@@ -82,18 +89,17 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-bold text-gray-400 uppercase mb-1 block">Peso por Pan (g)</label>
-                        <input type="number" id="unitWeight" value="250" class="input-minimal w-full font-bold">
+                        <input type="number" id="unitWeight" value="250" class="input-minimal w-full font-bold text-lg">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-400 uppercase mb-1 block">Cantidad</label>
-                        <input type="number" id="quantity" value="4" class="input-minimal w-full font-bold">
+                        <input type="number" id="quantity" value="4" class="input-minimal w-full font-bold text-lg">
                     </div>
                 </div>
 
                 <div>
                     <h3 class="text-[#a55c5c] font-bold text-xs uppercase border-b pb-2 mb-4">Ingredientes (%)</h3>
-                    <div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        </div>
+                    <div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 pt-4">
@@ -115,12 +121,11 @@
             </div>
 
             <div id="placeholder" class="glass-card flex-grow p-12 flex flex-col items-center justify-center text-center">
-                <div class="w-32 h-32 text-gray-300 mb-6">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.5,7C16.5,5 14.5,4.5 12,4.5S7.5,5 5.5,7C2.5,10 2,14.5 2,16.5A3.5,3.5 0 0,0 5.5,20H18.5A3.5,3.5 0 0,0 22,16.5C22,14.5 21.5,10 18.5,7M6.1,17.5C5.4,17.5 4.8,16.9 4.8,16.2C4.8,15.1 5.2,12.5 7.2,10.1C7.6,9.6 8.3,9.5 8.8,9.9C9.3,10.3 9.4,11 9,11.5C7.6,13.1 7.3,15.2 7.3,16.2C7.3,16.9 6.7,17.5 6.1,17.5M10.8,17.5C10.1,17.5 9.5,16.9 9.5,16.2C9.5,14.5 10.3,11.1 13.2,8.4C13.7,7.9 14.5,8 14.9,8.5C15.3,9 15.2,9.7 14.7,10.1C12.5,12.2 12,14.8 12,16.2C12,16.9 11.4,17.5 10.8,17.5M16.5,17.5C15.8,17.5 15.2,16.9 15.2,16.2C15.2,15.2 15.5,13.8 16.4,12.5C16.8,12 17.5,11.9 18,12.3C18.5,12.7 18.6,13.4 18.2,13.9C17.7,14.7 17.7,15.6 17.7,16.2C17.7,16.9 17.1,17.5 16.5,17.5Z" />
-                    </svg>
-                </div>
-                <p class="text-gray-400 font-medium">Configura tu receta para<br>obtener los pesos exactos</p>
+                <img src="IMG_1154.png" alt="Pan Artesanal" class="bread-image mb-6">
+                
+                <p class="text-gray-400 font-medium leading-relaxed">
+                    Configura tu receta para<br>obtener los pesos exactos
+                </p>
             </div>
         </div>
     </div>
@@ -169,8 +174,7 @@
 
                 const flour = (totalM / sumP) * 100;
                 document.getElementById('placeholder').classList.add('hidden');
-                const resCard = document.getElementById('resultsCard');
-                resCard.classList.remove('hidden');
+                document.getElementById('resultsCard').classList.remove('hidden');
                 document.getElementById('resTotal').innerText = Math.round(totalM) + "g";
 
                 const list = document.getElementById('resList');
