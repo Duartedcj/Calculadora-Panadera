@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boulangerie Calc | Calculadora Panadera</title>
+    <style>
+        :root {
+            --maroon-light: #a55c5c;
+            --red-accent: #d94343;
+            --white: #ffffff;
+            --bg-soft: #fafafa;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-soft);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--white);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--maroon-light);
+            font-weight: 300;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            color: var(--maroon-light);
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--maroon-light);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            background-color: var(--maroon-light);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn-calculate:hover {
+            background-color: var(--red-accent);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #eee;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        .total-mass {
+            font-weight: bold;
+            color: var(--red-accent);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Boulangerie Calc</h1>
+    
+    <div class="input-group">
+        <label>Peso de un pan (gramos)</label>
+        <input type="number" id="unitWeight" placeholder="Ej: 250" value="250">
+    </div>
+
+    <div class="input-group">
+        <label>Cantidad de panes deseados</label>
+        <input type="number" id="quantity" placeholder="Ej: 10" value="4">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+    <p style="font-size: 0.8rem; color: #888;">Ingresa los porcentajes de tu receta (Base: Harina 100%)</p>
+
+    <div class="input-group">
+        <label>Agua (%)</label>
+        <input type="number" id="pctWater" value="65">
+    </div>
+
+    <div class="input-group">
+        <label>Sal (%)</label>
+        <input type="number" id="pctSalt" value="2">
+    </div>
+
+    <div class="input-group">
+        <label>Levadura (%)</label>
+        <input type="number" id="pctYeast" value="1">
+    </div>
+
+    <button class="btn-calculate" onclick="calculate()">Calcular Receta</button>
+
+    <div id="resultsArea" class="results" style="display:none;">
+        <div class="result-item total-mass">
+            <span>Masa Total Necesaria:</span>
+            <span id="resTotal">0g</span>
+        </div>
+        <div class="result-item">
+            <span>Harina:</span>
+            <span id="resFlour">0g</span>
+        </div>
+        <div class="result-item">
+            <span>Agua:</span>
+            <span id="resWater">0g</span>
+        </div>
+        <div class="result-item">
+            <span>Sal:</span>
+            <span id="resSalt">0g</span>
+        </div>
+        <div class="result-item">
+            <span>Levadura:</span>
+            <span id="resYeast">0g</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Obtener valores
+        const unitWeight = parseFloat(document.getElementById('unitWeight').value);
+        const quantity = parseFloat(document.getElementById('quantity').value);
+        const pctWater = parseFloat(document.getElementById('pctWater').value);
+        const pctSalt = parseFloat(document.getElementById('pctSalt').value);
+        const pctYeast = parseFloat(document.getElementById('pctYeast').value);
+
+        // Masa total
+        const totalMass = unitWeight * quantity;
+
+        // Cálculo basado en porcentaje panadero: 
+        // Masa Total = Harina * (1 + (sumatoria porcentajes / 100))
+        const totalPercentage = 100 + pctWater + pctSalt + pctYeast;
+        const flourWeight = (totalMass / totalPercentage) * 100;
+
+        // Calcular ingredientes individuales
+        const waterWeight = (flourWeight * pctWater) / 100;
+        const saltWeight = (flourWeight * pctSalt) / 100;
+        const yeastWeight = (flourWeight * pctYeast) / 100;
+
+        // Mostrar resultados
+        document.getElementById('resultsArea').style.display = 'block';
+        document.getElementById('resTotal').innerText = totalMass.toFixed(0) + 'g';
+        document.getElementById('resFlour').innerText = flourWeight.toFixed(1) + 'g';
+        document.getElementById('resWater').innerText = waterWeight.toFixed(1) + 'g';
+        document.getElementById('resSalt').innerText = saltWeight.toFixed(1) + 'g';
+        document.getElementById('resYeast').innerText = yeastWeight.toFixed(1) + 'g';
+    }
+</script>
+
+</body>
+</html>
