@@ -3,195 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boulangerie Calc | Calculadora Panadera</title>
+    <title>Baking Lab | Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --maroon-light: #a55c5c;
-            --red-accent: #d94343;
-            --white: #ffffff;
-            --bg-soft: #fafafa;
-            --text: #333;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-soft);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fdfcfc 0%, #f7e8e8 100%);
+            min-height: 100vh;
         }
-
-        .container {
-            background: var(--white);
-            max-width: 500px;
-            width: 100%;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(165, 92, 92, 0.1);
         }
-
-        h1 {
-            color: var(--maroon-light);
-            font-weight: 300;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            color: var(--maroon-light);
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-            outline: none;
-            transition: border 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--maroon-light);
-        }
-
-        .btn-calculate {
-            width: 100%;
-            background-color: var(--maroon-light);
-            color: white;
+        .input-minimal {
             border: none;
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s;
+            background: #fdf2f2;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
         }
-
-        .btn-calculate:hover {
-            background-color: var(--red-accent);
+        .input-minimal:focus {
+            outline: none;
+            border-bottom: 2px solid #a55c5c;
+            background: #fff;
         }
-
-        .results {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px dashed #eee;
+        .btn-maroon {
+            background-color: #a55c5c;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f9f9f9;
+        .btn-maroon:hover {
+            background-color: #8b4a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(165, 92, 92, 0.3);
         }
-
-        .total-mass {
-            font-weight: bold;
-            color: var(--red-accent);
-            font-size: 1.1rem;
-        }
+        .accent-red { color: #d94343; }
     </style>
 </head>
-<body>
+<body class="p-6 md:p-12 flex items-center justify-center">
 
-<div class="container">
-    <h1>Boulangerie Calc</h1>
-    
-    <div class="input-group">
-        <label>Peso de un pan (gramos)</label>
-        <input type="number" id="unitWeight" placeholder="Ej: 250" value="250">
-    </div>
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div class="glass-card rounded-3xl p-8">
+            <header class="mb-8">
+                <h1 class="text-3xl font-700 text-[#a55c5c] tracking-tight">Baking<span class="font-light text-gray-400">Lab</span></h1>
+                <p class="text-sm text-gray-500 uppercase tracking-widest mt-1">Calculadora de Precisión</p>
+            </header>
 
-    <div class="input-group">
-        <label>Cantidad de panes deseados</label>
-        <input type="number" id="quantity" placeholder="Ej: 10" value="4">
-    </div>
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Peso Pan (g)</label>
+                        <input type="number" id="unitWeight" value="250" class="input-minimal w-full p-4 rounded-2xl text-lg font-semibold text-gray-700">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Cantidad</label>
+                        <input type="number" id="quantity" value="4" class="input-minimal w-full p-4 rounded-2xl text-lg font-semibold text-gray-700">
+                    </div>
+                </div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-    <p style="font-size: 0.8rem; color: #888;">Ingresa los porcentajes de tu receta (Base: Harina 100%)</p>
+                <div class="space-y-4 pt-4 border-t border-red-50">
+                    <label class="text-[11px] font-bold text-[#a55c5c] uppercase">Porcentajes Panaderos (%)</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="text-center p-3 bg-white rounded-2xl shadow-sm border border-red-50">
+                            <span class="block text-[10px] text-gray-400">AGUA</span>
+                            <input type="number" id="pctWater" value="65" class="w-full text-center font-bold text-maroon-700 focus:outline-none">
+                        </div>
+                        <div class="text-center p-3 bg-white rounded-2xl shadow-sm border border-red-50">
+                            <span class="block text-[10px] text-gray-400">SAL</span>
+                            <input type="number" id="pctSalt" value="2" class="w-full text-center font-bold text-maroon-700 focus:outline-none">
+                        </div>
+                        <div class="text-center p-3 bg-white rounded-2xl shadow-sm border border-red-50">
+                            <span class="block text-[10px] text-gray-400">LEV.</span>
+                            <input type="number" id="pctYeast" value="1.5" class="w-full text-center font-bold text-maroon-700 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
 
-    <div class="input-group">
-        <label>Agua (%)</label>
-        <input type="number" id="pctWater" value="65">
-    </div>
-
-    <div class="input-group">
-        <label>Sal (%)</label>
-        <input type="number" id="pctSalt" value="2">
-    </div>
-
-    <div class="input-group">
-        <label>Levadura (%)</label>
-        <input type="number" id="pctYeast" value="1">
-    </div>
-
-    <button class="btn-calculate" onclick="calculate()">Calcular Receta</button>
-
-    <div id="resultsArea" class="results" style="display:none;">
-        <div class="result-item total-mass">
-            <span>Masa Total Necesaria:</span>
-            <span id="resTotal">0g</span>
+                <button onclick="calculate()" class="btn-maroon w-full py-4 rounded-2xl text-white font-bold tracking-wide mt-4">
+                    CALCULAR RECETA
+                </button>
+            </div>
         </div>
-        <div class="result-item">
-            <span>Harina:</span>
-            <span id="resFlour">0g</span>
+
+        <div class="flex flex-col justify-center">
+            <div id="resultsArea" class="hidden space-y-4 animate-in fade-in duration-700">
+                <div class="glass-card rounded-3xl p-8 border-l-4 border-[#d94343]">
+                    <p class="text-sm text-gray-500 mb-1">Masa Total</p>
+                    <h2 id="resTotal" class="text-5xl font-bold text-[#a55c5c]">-</h2>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="flex justify-between items-center p-5 bg-white/50 rounded-2xl border border-white">
+                        <span class="font-semibold text-gray-600">Harina de Trigo</span>
+                        <span id="resFlour" class="text-xl font-bold text-gray-800">-</span>
+                    </div>
+                    <div class="flex justify-between items-center p-5 bg-white/50 rounded-2xl border border-white">
+                        <span class="font-semibold text-gray-600">Agua</span>
+                        <span id="resWater" class="text-xl font-bold text-gray-800">-</span>
+                    </div>
+                    <div class="flex justify-between items-center p-5 bg-white/50 rounded-2xl border border-white">
+                        <span class="font-semibold text-gray-600 text-red-400">Sal</span>
+                        <span id="resSalt" class="text-xl font-bold text-gray-800">-</span>
+                    </div>
+                    <div class="flex justify-between items-center p-5 bg-white/50 rounded-2xl border border-white">
+                        <span class="font-semibold text-gray-600">Levadura</span>
+                        <span id="resYeast" class="text-xl font-bold text-gray-800">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="emptyState" class="text-center p-12 opacity-40">
+                <div class="text-6xl mb-4">🍞</div>
+                <p>Ingresa los valores y pulsa calcular para ver el desglose.</p>
+            </div>
         </div>
-        <div class="result-item">
-            <span>Agua:</span>
-            <span id="resWater">0g</span>
-        </div>
-        <div class="result-item">
-            <span>Sal:</span>
-            <span id="resSalt">0g</span>
-        </div>
-        <div class="result-item">
-            <span>Levadura:</span>
-            <span id="resYeast">0g</span>
-        </div>
+
     </div>
-</div>
 
-<script>
-    function calculate() {
-        // Obtener valores
-        const unitWeight = parseFloat(document.getElementById('unitWeight').value);
-        const quantity = parseFloat(document.getElementById('quantity').value);
-        const pctWater = parseFloat(document.getElementById('pctWater').value);
-        const pctSalt = parseFloat(document.getElementById('pctSalt').value);
-        const pctYeast = parseFloat(document.getElementById('pctYeast').value);
+    <script>
+        function calculate() {
+            const unitWeight = parseFloat(document.getElementById('unitWeight').value) || 0;
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const pctWater = parseFloat(document.getElementById('pctWater').value) || 0;
+            const pctSalt = parseFloat(document.getElementById('pctSalt').value) || 0;
+            const pctYeast = parseFloat(document.getElementById('pctYeast').value) || 0;
 
-        // Masa total
-        const totalMass = unitWeight * quantity;
+            const totalMass = unitWeight * quantity;
+            const totalPercentage = 100 + pctWater + pctSalt + pctYeast;
+            const flourWeight = (totalMass / totalPercentage) * 100;
 
-        // Cálculo basado en porcentaje panadero: 
-        // Masa Total = Harina * (1 + (sumatoria porcentajes / 100))
-        const totalPercentage = 100 + pctWater + pctSalt + pctYeast;
-        const flourWeight = (totalMass / totalPercentage) * 100;
+            const waterWeight = (flourWeight * pctWater) / 100;
+            const saltWeight = (flourWeight * pctSalt) / 100;
+            const yeastWeight = (flourWeight * pctYeast) / 100;
 
-        // Calcular ingredientes individuales
-        const waterWeight = (flourWeight * pctWater) / 100;
-        const saltWeight = (flourWeight * pctSalt) / 100;
-        const yeastWeight = (flourWeight * pctYeast) / 100;
+            document.getElementById('emptyState').classList.add('hidden');
+            const results = document.getElementById('resultsArea');
+            results.classList.remove('hidden');
 
-        // Mostrar resultados
-        document.getElementById('resultsArea').style.display = 'block';
-        document.getElementById('resTotal').innerText = totalMass.toFixed(0) + 'g';
-        document.getElementById('resFlour').innerText = flourWeight.toFixed(1) + 'g';
-        document.getElementById('resWater').innerText = waterWeight.toFixed(1) + 'g';
-        document.getElementById('resSalt').innerText = saltWeight.toFixed(1) + 'g';
-        document.getElementById('resYeast').innerText = yeastWeight.toFixed(1) + 'g';
-    }
-</script>
-
+            document.getElementById('resTotal').innerText = Math.round(totalMass) + 'g';
+            document.getElementById('resFlour').innerText = Math.round(flourWeight) + 'g';
+            document.getElementById('resWater').innerText = Math.round(waterWeight) + 'g';
+            document.getElementById('resSalt').innerText = saltWeight.toFixed(1) + 'g';
+            document.getElementById('resYeast').innerText = yeastWeight.toFixed(1) + 'g';
+        }
+    </script>
 </body>
 </html>
