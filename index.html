@@ -3,208 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baking Lab Pro | Recetas Dinámicas</title>
+    <title>BakingLab | Smart Baker's Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #fdfcfc 0%, #f7e8e8 100%);
+            background-color: #f3f4f6;
+            color: #4a4a4a;
             min-height: 100vh;
+            padding: 20px;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 50px rgba(165, 92, 92, 0.08);
+        .main-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
-        .input-modern {
-            background: #ffffff;
-            border: 1px solid #eee;
-            transition: all 0.2s ease;
+        .input-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.2s;
         }
-        .input-modern:focus {
-            outline: none;
+        .input-box:focus-within {
             border-color: #a55c5c;
-            box-shadow: 0 0 0 3px rgba(165, 92, 92, 0.1);
+            background: white;
         }
-        .btn-main {
-            background: #a55c5c;
-            transition: all 0.3s ease;
+        .btn-calculate {
+            background-color: #a55c5c;
+            color: white;
+            transition: opacity 0.2s;
         }
-        .btn-main:hover {
-            background: #d94343;
-            transform: translateY(-1px);
+        .btn-calculate:hover { opacity: 0.9; }
+        .btn-reset {
+            background-color: #f1d5d5;
+            color: #a55c5c;
+            transition: background 0.2s;
         }
-        .recipe-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a55c5c'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
+        .btn-reset:hover { background-color: #ebc8c8; }
+        
+        /* Estilo para los resultados */
+        .results-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border-top: 15px solid #a55c5c;
         }
     </style>
 </head>
-<body class="p-4 md:p-8 flex items-center justify-center">
+<body class="flex items-center justify-center">
 
-    <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="glass-card rounded-[2rem] p-8">
+        <div class="lg:col-span-7 main-card p-8">
             <header class="mb-8">
-                <h1 class="text-3xl font-bold text-[#a55c5c]">Baking<span class="font-light text-gray-400">Lab</span></h1>
-                <p class="text-[10px] tracking-[0.2em] text-gray-400 uppercase font-bold">Master Baker Edition</p>
+                <h1 class="text-4xl font-bold text-[#a55c5c] mb-1">BakingLab</h1>
+                <p class="text-gray-400 font-medium">Smart Baker's Calculator</p>
             </header>
 
             <div class="space-y-6">
                 <div>
-                    <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Seleccionar Tipo de Pan</label>
-                    <select id="recipeSelector" onchange="updateIngredientInputs()" class="recipe-select w-full p-4 mt-1 rounded-2xl input-modern font-semibold text-gray-700">
-                        <option value="basic">Pan Básico (Agua, Sal, Levadura)</option>
-                        <option value="brioche">Brioche (Leche, Huevo, Mantequilla, Azúcar)</option>
-                        <option value="pizza">Pizza Napolitana (Alta Hidratación)</option>
-                        <option value="integral">Pan Integral (Miel, Aceite)</option>
+                    <label class="text-[#a55c5c] font-bold text-sm mb-2 block">Seleccionar Tipo de Pan</label>
+                    <select id="recipeSelector" onchange="updateIngredients()" class="w-full input-box font-semibold text-gray-600 outline-none">
+                        <option value="basic">Pan Blanco Básico</option>
+                        <option value="brioche">Brioche Francés</option>
+                        <option value="pizza">Pizza Napolitana</option>
                     </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Peso Unitario (g)</label>
-                        <input type="number" id="unitWeight" value="250" class="w-full p-4 mt-1 rounded-2xl input-modern font-bold text-gray-700">
+                    <div class="input-box">
+                        <label class="block text-[10px] uppercase font-bold text-gray-400">Peso Unitario (g)</label>
+                        <input type="number" id="unitWeight" value="250" class="w-full bg-transparent font-bold text-lg outline-none">
                     </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Cantidad de Panes</label>
-                        <input type="number" id="quantity" value="4" class="w-full p-4 mt-1 rounded-2xl input-modern font-bold text-gray-700">
+                    <div class="input-box">
+                        <label class="block text-[10px] uppercase font-bold text-gray-400">Cantidad de Panes</label>
+                        <input type="number" id="quantity" value="4" class="w-full bg-transparent font-bold text-lg outline-none">
                     </div>
                 </div>
 
-                <div class="pt-6 border-t border-gray-100">
-                    <label class="text-[11px] font-bold text-[#a55c5c] uppercase mb-4 block">Porcentajes Panaderos (Base Harina 100%)</label>
-                    <div id="ingredientsContainer" class="grid grid-cols-2 gap-3">
+                <div>
+                    <h3 class="text-[#a55c5c] font-bold text-sm mb-4 border-b pb-2">Porcentajes Panaderos (Base 100%)</h3>
+                    <div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         </div>
                 </div>
 
-                <button onclick="calculateRecipe()" class="btn-main w-full py-5 rounded-2xl text-white font-bold text-lg shadow-lg shadow-red-900/10">
-                    Calcular Fórmula
-                </button>
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <button onclick="calculate()" class="btn-calculate py-4 rounded-2xl font-bold text-lg">Calcular</button>
+                    <button onclick="resetApp()" class="btn-reset py-4 rounded-2xl font-bold text-lg">Reset</button>
+                </div>
             </div>
         </div>
 
-        <div class="flex flex-col gap-4">
-            <div id="resultsCard" class="hidden glass-card rounded-[2rem] p-8 border-t-8 border-[#a55c5c]">
-                <div class="mb-6">
-                    <p class="text-sm font-semibold text-gray-400 uppercase">Masa Total Producida</p>
-                    <h2 id="resTotal" class="text-6xl font-black text-[#a55c5c] tracking-tighter">-</h2>
+        <div class="lg:col-span-5 flex flex-col gap-6">
+            
+            <div id="resCard" class="hidden results-card p-8 shadow-xl">
+                <p class="text-gray-500 font-bold text-xs uppercase mb-2">Masa Total Producida</p>
+                <div class="flex justify-between items-end">
+                    <h2 id="resTotal" class="text-5xl font-black text-[#a55c5c] tracking-tighter">-</h2>
+                    <span class="text-red-500 font-bold text-2xl mb-1">—</span>
                 </div>
-
-                <div id="resultsList" class="space-y-3">
+                
+                <div id="resultsList" class="mt-8 space-y-3">
                     </div>
             </div>
 
-            <div id="placeholder" class="h-full flex flex-col items-center justify-center opacity-30 text-center">
-                <div class="text-8xl mb-4">⚖️</div>
-                <p class="text-xl font-light">Configura tu receta para <br> obtener las cantidades exactas</p>
+            <div id="placeholder" class="main-card flex-grow p-12 flex flex-col items-center justify-center text-center opacity-60">
+                <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-6">
+                    <span class="text-6xl">🍞</span>
+                </div>
+                <p class="text-gray-500 font-medium">Configura tu receta para<br>obtener los ingredientes exactos</p>
             </div>
+
         </div>
     </div>
 
     <script>
-        // Definición de ingredientes por receta
         const recipes = {
             basic: [
-                { id: 'water', label: 'Agua', default: 65 },
-                { id: 'salt', label: 'Sal', default: 2 },
-                { id: 'yeast', label: 'Levadura', default: 1.5 }
+                { id: 'water', label: 'Agua', pct: 65 },
+                { id: 'salt', label: 'Sal', pct: 2 },
+                { id: 'yeast', label: 'Levadura', pct: 1.5 }
             ],
             brioche: [
-                { id: 'milk', label: 'Leche', default: 45 },
-                { id: 'eggs', label: 'Huevos', default: 20 },
-                { id: 'butter', label: 'Mantequilla', default: 40 },
-                { id: 'sugar', label: 'Azúcar', default: 12 },
-                { id: 'salt', label: 'Sal', default: 2 },
-                { id: 'yeast', label: 'Levadura', default: 3 }
+                { id: 'milk', label: 'Leche', pct: 40 },
+                { id: 'butter', label: 'Mantequilla', pct: 35 },
+                { id: 'eggs', label: 'Huevos', pct: 15 },
+                { id: 'sugar', label: 'Azúcar', pct: 10 },
+                { id: 'salt', label: 'Sal', pct: 2 }
             ],
             pizza: [
-                { id: 'water', label: 'Agua', default: 70 },
-                { id: 'salt', label: 'Sal', default: 3 },
-                { id: 'yeast', label: 'Levadura', default: 0.2 },
-                { id: 'oil', label: 'Aceite de Oliva', default: 2 }
-            ],
-            integral: [
-                { id: 'water', label: 'Agua', default: 75 },
-                { id: 'honey', label: 'Miel', default: 5 },
-                { id: 'oil', label: 'Aceite', default: 5 },
-                { id: 'salt', label: 'Sal', default: 2 },
-                { id: 'yeast', label: 'Levadura', default: 2 }
+                { id: 'water', label: 'Agua', pct: 70 },
+                { id: 'salt', label: 'Sal', pct: 3 },
+                { id: 'yeast', label: 'Levadura', pct: 0.3 }
             ]
         };
 
-        function updateIngredientInputs() {
-            const recipeKey = document.getElementById('recipeSelector').value;
-            const container = document.getElementById('ingredientsContainer');
-            container.innerHTML = ''; // Limpiar
+        function updateIngredients() {
+            const key = document.getElementById('recipeSelector').value;
+            const grid = document.getElementById('ingredientsGrid');
+            grid.innerHTML = '';
 
-            recipes[recipeKey].forEach(ing => {
-                const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded-xl border border-gray-50 shadow-sm";
-                div.innerHTML = `
-                    <label class="block text-[10px] text-gray-400 font-bold uppercase mb-1">${ing.label} %</label>
-                    <input type="number" data-id="${ing.id}" data-label="${ing.label}" value="${ing.default}" 
-                           class="ing-input w-full font-bold text-gray-700 focus:outline-none text-lg">
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function calculateRecipe() {
-            const unitWeight = parseFloat(document.getElementById('unitWeight').value) || 0;
-            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-            const totalMassGoal = unitWeight * quantity;
-
-            // Obtener todos los porcentajes dinámicos
-            const inputs = document.querySelectorAll('.ing-input');
-            let sumPercentages = 100; // La harina siempre es 100
-            let ingredientList = [];
-
-            inputs.forEach(input => {
-                const val = parseFloat(input.value) || 0;
-                sumPercentages += val;
-                ingredientList.push({
-                    label: input.getAttribute('data-label'),
-                    pct: val
-                });
-            });
-
-            // Calcular Harina (Base)
-            const flourWeight = (totalMassGoal / sumPercentages) * 100;
-
-            // Mostrar Resultados
-            document.getElementById('placeholder').classList.add('hidden');
-            const resCard = document.getElementById('resultsCard');
-            resCard.classList.remove('hidden');
-            
-            document.getElementById('resTotal').innerText = Math.round(totalMassGoal) + 'g';
-            
-            const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = `
-                <div class="flex justify-between items-center p-4 bg-[#a55c5c] text-white rounded-2xl">
-                    <span class="font-bold uppercase text-xs tracking-wider">Harina Principal (100%)</span>
-                    <span class="text-2xl font-black">${Math.round(flourWeight)}g</span>
-                </div>
-            `;
-
-            ingredientList.forEach(ing => {
-                const weight = (flourWeight * ing.pct) / 100;
-                resultsList.innerHTML += `
-                    <div class="flex justify-between items-center p-4 bg-white/50 rounded-2xl border border-white">
-                        <span class="font-semibold text-gray-600">${ing.label} (${ing.pct}%)</span>
-                        <span class="text-xl font-bold text-gray-800">${weight < 10 ? weight.toFixed(1) : Math.round(weight)}g</span>
+            recipes[key].forEach(ing => {
+                grid.innerHTML += `
+                    <div class="input-box">
+                        <label class="block text-[10px] uppercase font-bold text-gray-400">${ing.label}</label>
+                        <input type="number" step="0.1" value="${ing.pct}" data-label="${ing.label}" class="ing-input w-full bg-transparent font-bold outline-none">
                     </div>
                 `;
             });
         }
 
-        // Inicializar al cargar
-        updateIngredientInputs();
+        function calculate() {
+            const unitWeight = parseFloat(document.getElementById('unitWeight').value) || 0;
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const totalMass = unitWeight * quantity;
+
+            const inputs = document.querySelectorAll('.ing-input');
+            let sumPct = 100;
+            let ings = [];
+
+            inputs.forEach(i => {
+                const val = parseFloat(i.value) || 0;
+                sumPct += val;
+                ings.push({ label: i.getAttribute('data-label'), pct: val });
+            });
+
+            const flour = (totalMass / sumPct) * 100;
+
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('resCard').classList.remove('hidden');
+            document.getElementById('resTotal').innerText = Math.round(totalMass) + "g";
+
+            const list = document.getElementById('resultsList');
+            list.innerHTML = `
+                <div class="flex justify-between border-b pb-2">
+                    <span class="text-gray-500 font-bold uppercase text-xs">Ingrediente</span>
+                    <span class="text-gray-500 font-bold uppercase text-xs">Gramos</span>
+                </div>
+                <div class="flex justify-between items-center py-2 font-bold text-gray-800 border-b border-gray-100">
+                    <span>Harina</span>
+                    <span>${Math.round(flour)}g</span>
+                </div>
+            `;
+
+            ings.forEach(ing => {
+                const weight = (flour * ing.pct) / 100;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center py-2 font-medium text-gray-600 border-b border-gray-100">
+                        <span>${ing.label} (${ing.pct}%)</span>
+                        <span>${weight < 10 ? weight.toFixed(1) : Math.round(weight)}g</span>
+                    </div>
+                `;
+            });
+        }
+
+        function resetApp() {
+            document.getElementById('unitWeight').value = 250;
+            document.getElementById('quantity').value = 4;
+            document.getElementById('recipeSelector').value = 'basic';
+            updateIngredients();
+            document.getElementById('resCard').classList.add('hidden');
+            document.getElementById('placeholder').classList.remove('hidden');
+        }
+
+        updateIngredients();
     </script>
 </body>
 </html>
