@@ -14,13 +14,13 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 .btn-maroon { background-color: #a55c5c; color: white; transition: all 0.3s; border-radius: 12px; }
 .btn-maroon:hover { background-color: #8b4a4a; transform: translateY(-1px); }
 .chat-scroll { height: 400px; overflow-y: auto; scrollbar-width: thin; }
-.ai-bubble { background: #f0f4ff; border-radius: 18px 18px 18px 0; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; border: 1px solid #e0e7ff; color: #1e293b; white-space: pre-wrap; }
+.ai-bubble { background: #f0f4ff; border-radius: 18px 18px 18px 0; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; border: 1px solid #e0e7ff; color: #1e293b; white-space: pre-wrap; position: relative; }
 .user-bubble { background: #ffffff; border-radius: 18px 18px 0 18px; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; text-align: right; border: 1px solid #e5e7eb; margin-left: auto; max-width: 80%; word-break: break-word; }
-.typing { display: flex; gap: 4px; }
-.typing span { width: 8px; height: 8px; background: #a55c5c; border-radius: 50%; display: inline-block; animation: bounce 0.6s infinite alternate; }
+.typing { display: flex; gap: 4px; align-items: center; }
+.typing span { width: 6px; height: 6px; background: #a55c5c; border-radius: 50%; animation: blink 1.2s infinite; }
 .typing span:nth-child(2) { animation-delay: 0.2s; }
 .typing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { to { transform: translateY(-6px); opacity: 0.7; } }
+@keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
 .bread-image { max-width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
 #studioModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; align-items: center; justify-content: center; }
 </style>
@@ -154,15 +154,14 @@ else { badge.classList.add('hidden'); }
 async function askAI() {
 const input = document.getElementById('aiInput');
 const chatBox = document.getElementById('chatBox');
-if(!input.value) return;
+if (!input.value) return;
 
 const prompt = input.value;
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
-chatHistory.push({role:'user', content:prompt});
+chatHistory.push({ role: 'user', content: prompt });
 input.value = "";
 chatBox.scrollTop = chatBox.scrollHeight;
 
-// Agregar animación de "generando respuesta"
 const typingBubble = document.createElement('div');
 typingBubble.className = 'ai-bubble';
 typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span> Generando respuesta...</div>';
@@ -171,31 +170,51 @@ chatBox.scrollTop = chatBox.scrollHeight;
 
 const systemInstruction = `Eres un maestro panadero experto.
 Cuando el usuario pide una receta por primera vez, responde:
-1) Breve reseña/intoducción de máximo 2 líneas.
+1) Breve reseña/intoducción (máx 2 líneas).
 2) Lista de ingredientes en texto visible.
 3) Pasos numerados claros para elaborar la receta.
-Para preguntas posteriores, responde directamente sin repetir toda la receta.`;
+Adjunta al final un JSON: DATA: {"nombre":"Nombre","ingredients":[{"n":"Ingrediente","p":70}]}.
+La harina siempre es 100% y no se incluye en el JSON.`;
 
 try {
 const response = await fetch('/api/chat', {
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
+method: 'POST',
+headers: {'Content-Type':'application/json'},
+body: JSON.stringify({
 contents:[
 {parts:[{text:systemInstruction}]},
-...chatHistory.map(msg=>({parts:[{text:msg.content}]}))
+...chatHistory.map(msg => ({parts:[{text:msg.content}]}))
 ]
 })
 });
+
 const data = await response.json();
 let aiResponse = data.candidates[0].content.parts[0].text;
 
-// Quitar animación
 typingBubble.remove();
 
-// Mostrar respuesta en burbuja
+if(aiResponse.includes("DATA:")){
+const parts = aiResponse.split("DATA:");
+const displayText = parts[0].trim();
+const jsonStr = parts[1].trim().replace(/```json|```/g,"");
+const recipeData = JSON.parse(jsonStr);
+
+const bubble = document.createElement('div');
+bubble.className = 'ai-bubble';
+bubble.innerHTML = `${displayText}
+<button onclick='addRecipe(${JSON.stringify(recipeData)})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
+➕ Agregar a mis recetas
+</button>`;
+chatBox.appendChild(bubble);
+chatHistory.push({role:'assistant', content:displayText});
+}else{
 chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
 chatHistory.push({role:'assistant', content:aiResponse});
+}
+
+// Limitar historial a últimos 7 mensajes
+if(chatHistory.length > 7) chatHistory = chatHistory.slice(chatHistory.length-7);
+
 chatBox.scrollTop = chatBox.scrollHeight;
 }catch(e){
 typingBubble.remove();
@@ -203,11 +222,21 @@ chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo cone
 }
 }
 
+function addRecipe(data){
+recipes[data.nombre] = data.ingredients;
+localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+init();
+document.getElementById('recipeSelector').value = data.nombre;
+loadRecipe();
+calculate();
+alert(`Receta "${data.nombre}" agregada a tus recetas.`);
+}
+
 function calculate(){
-const uw = parseFloat(document.getElementById('unitWeight').value)||0;
-const qty = parseFloat(document.getElementById('quantity').value)||0;
-const totalM = uw*qty;
-const inputs = document.querySelectorAll('.ing-input');
+const uw=parseFloat(document.getElementById('unitWeight').value)||0;
+const qty=parseFloat(document.getElementById('quantity').value)||0;
+const totalM=uw*qty;
+const inputs=document.querySelectorAll('.ing-input');
 let sumP=100;
 let ings=[];
 inputs.forEach(i=>{
