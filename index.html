@@ -3,87 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BakingLab Pro</title>
+    <title>BakingLab Pro v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f3f4f6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 2rem;
-            box-shadow: 0 10px 40px rgba(165, 92, 92, 0.06);
-        }
-        .input-minimal {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 12px;
-            transition: all 0.2s;
-        }
-        .input-minimal:focus {
-            border-color: #a55c5c;
-            background: white;
-            outline: none;
-        }
-        .btn-maroon {
-            background-color: #a55c5c;
-            color: white;
-            transition: all 0.3s;
-        }
-        .btn-maroon:hover:not(:disabled) {
-            background-color: #8b4a4a;
-            transform: translateY(-1px);
-        }
-        .btn-reset {
-            background-color: #fceaea;
-            color: #a55c5c;
-        }
-        .loader {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-            display: none;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 2rem; box-shadow: 0 10px 40px rgba(165, 92, 92, 0.06); }
+        .input-minimal { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; transition: all 0.2s; }
+        .input-minimal:focus { border-color: #a55c5c; background: white; outline: none; }
+        .btn-maroon { background-color: #a55c5c; color: white; transition: all 0.3s; }
+        .btn-maroon:hover:not(:disabled) { background-color: #8b4a4a; transform: translateY(-1px); }
+        .btn-secondary { background-color: #f3f4f6; color: #4b5563; }
+        .loader { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Contenedor de la imagen del pan */
-        .bread-image {
-            max-width: 180px;
-            height: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
-        }
+        .hydration-badge { background: #eef2ff; color: #4338ca; padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
         <div class="lg:col-span-7 glass-card p-10">
-            <header class="mb-8">
-                <h1 class="text-4xl font-bold text-[#a55c5c]">BakingLab</h1>
-                <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mt-1">Smart Baker's Calculator</p>
+            <header class="flex justify-between items-start mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold text-[#a55c5c]">BakingLab</h1>
+                    <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mt-1">Smart Baker's Calculator</p>
+                </div>
+                <div id="hydrationDisplay" class="hydration-badge hidden">Hidratación: 0%</div>
             </header>
 
             <div class="space-y-6">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">Seleccionar Receta</label>
-                    <select id="recipeSelector" onchange="updateInputs()" class="input-minimal w-full font-semibold text-gray-600">
-                        <option value="basic">Pan Blanco Artesanal</option>
-                        <option value="brioche">Brioche Francés</option>
-                        <option value="pizza">Pizza Napolitana</option>
-                    </select>
+                <div class="flex gap-2">
+                    <div class="flex-grow">
+                        <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">Receta</label>
+                        <select id="recipeSelector" onchange="loadSelectedRecipe()" class="input-minimal w-full font-semibold text-gray-600"></select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="saveCurrentRecipe()" class="btn-secondary p-3 rounded-xl hover:bg-gray-200" title="Guardar cambios">
+                            💾
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -107,98 +65,132 @@
                         <span id="btnText">Calcular</span>
                         <div id="btnLoader" class="loader"></div>
                     </button>
-                    <button onclick="resetApp()" class="btn-reset py-4 rounded-2xl font-bold text-lg">Reset</button>
+                    <button onclick="resetApp()" class="btn-secondary py-4 rounded-2xl font-bold text-lg">Reset</button>
                 </div>
             </div>
         </div>
 
         <div class="lg:col-span-5 flex flex-col gap-6">
-            
-            <div id="resultsCard" class="hidden glass-card p-8 border-t-[12px] border-[#a55c5c] animate-in fade-in duration-500">
+            <div id="resultsCard" class="hidden glass-card p-8 border-t-[12px] border-[#a55c5c]">
                 <p class="text-xs font-bold text-gray-400 uppercase mb-1">Masa Total</p>
                 <h2 id="resTotal" class="text-6xl font-black text-[#a55c5c] tracking-tighter mb-8">-</h2>
                 <div id="resList" class="space-y-3"></div>
             </div>
 
             <div id="placeholder" class="glass-card flex-grow p-12 flex flex-col items-center justify-center text-center">
-                <img src="814B52B8-868E-436C-8A11-FF1198932CA3.png" alt="Pan Artesanal" class="bread-image mb-6">
-                
-                <p class="text-gray-400 font-medium leading-relaxed">
-                    Configura tu receta para<br>obtener los pesos exactos
-                </p>
+                <div class="text-6xl mb-4">🍞</div>
+                <p class="text-gray-400 font-medium">Configura tu receta para obtener los pesos exactos</p>
             </div>
         </div>
     </div>
 
     <script>
-        const recipes = {
-            basic: [{n:'Agua', p:65}, {n:'Sal', p:2}, {n:'Levadura', p:1.2}],
-            brioche: [{n:'Leche', p:40}, {n:'Mantequilla', p:30}, {n:'Huevo', p:20}, {n:'Azúcar', p:10}, {n:'Sal', p:2}],
-            pizza: [{n:'Agua', p:70}, {n:'Sal', p:3}, {n:'Levadura', p:0.5}]
+        // Recetas por defecto
+        const defaultRecipes = {
+            "Pan Blanco": [{n:'Agua', p:65}, {n:'Sal', p:2}, {n:'Levadura', p:1.2}],
+            "Brioche": [{n:'Leche', p:40}, {n:'Mantequilla', p:30}, {n:'Huevo', p:20}, {n:'Azúcar', p:10}, {n:'Sal', p:2}],
+            "Pizza": [{n:'Agua', p:70}, {n:'Sal', p:3}, {n:'Levadura', p:0.5}]
         };
 
-        function updateInputs() {
+        let customRecipes = JSON.parse(localStorage.getItem('bakingLab_recipes')) || defaultRecipes;
+
+        function init() {
+            const selector = document.getElementById('recipeSelector');
+            selector.innerHTML = Object.keys(customRecipes).map(name => `<option value="${name}">${name}</option>`).join('');
+            loadSelectedRecipe();
+        }
+
+        function loadSelectedRecipe() {
+            const name = document.getElementById('recipeSelector').value;
+            const ingredients = customRecipes[name];
             const grid = document.getElementById('ingredientsGrid');
-            grid.innerHTML = '';
-            recipes[document.getElementById('recipeSelector').value].forEach(ing => {
-                grid.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                        <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
-                        <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" class="ing-input w-full font-bold text-gray-700 outline-none">
-                    </div>`;
+            
+            // Refactorización eficiente del DOM e hidratación
+            grid.innerHTML = ingredients.map(ing => `
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
+                    <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" oninput="updateHydration()" class="ing-input w-full font-bold text-gray-700 outline-none">
+                </div>`).join('');
+            
+            updateHydration();
+        }
+
+        function updateHydration() {
+            const inputs = document.querySelectorAll('.ing-input');
+            let hydration = 0;
+            const liquidTerms = ['agua', 'leche', 'huevo', 'liquido', 'water', 'milk'];
+            
+            inputs.forEach(i => {
+                if (liquidTerms.some(term => i.getAttribute('data-name').toLowerCase().includes(term))) {
+                    hydration += parseFloat(i.value) || 0;
+                }
             });
+
+            const display = document.getElementById('hydrationDisplay');
+            if(hydration > 0) {
+                display.innerText = `Hidratación: ${hydration.toFixed(1)}%`;
+                display.classList.remove('hidden');
+            } else {
+                display.classList.add('hidden');
+            }
+        }
+
+        function saveCurrentRecipe() {
+            const name = document.getElementById('recipeSelector').value;
+            const inputs = document.querySelectorAll('.ing-input');
+            const newIngs = Array.from(inputs).map(i => ({
+                n: i.getAttribute('data-name'),
+                p: parseFloat(i.value) || 0
+            }));
+
+            customRecipes[name] = newIngs;
+            localStorage.setItem('bakingLab_recipes', JSON.stringify(customRecipes));
+            alert("¡Receta '" + name + "' guardada localmente!");
         }
 
         function calculate() {
             const btn = document.getElementById('btnCalc');
-            const loader = document.getElementById('btnLoader');
-            const text = document.getElementById('btnText');
-            
             btn.disabled = true;
-            loader.style.display = 'block';
-            text.style.opacity = '0.5';
+            document.getElementById('btnLoader').style.display = 'block';
 
             setTimeout(() => {
-                const uw = parseFloat(document.getElementById('unitWeight').value) || 0;
-                const qty = parseFloat(document.getElementById('quantity').value) || 0;
-                const totalM = uw * qty;
+                const totalM = (parseFloat(document.getElementById('unitWeight').value) || 0) * (parseFloat(document.getElementById('quantity').value) || 0);
                 const inputs = document.querySelectorAll('.ing-input');
                 let sumP = 100;
                 let ings = [];
 
                 inputs.forEach(i => {
-                    const p = parseFloat(i.value) || 0;
-                    sumP += p;
-                    ings.push({n: i.getAttribute('data-name'), p: p});
+                    const val = parseFloat(i.value) || 0;
+                    sumP += val;
+                    ings.push({n: i.getAttribute('data-name'), p: val});
                 });
 
                 const flour = (totalM / sumP) * 100;
+                
                 document.getElementById('placeholder').classList.add('hidden');
                 document.getElementById('resultsCard').classList.remove('hidden');
                 document.getElementById('resTotal').innerText = Math.round(totalM) + "g";
 
-                const list = document.getElementById('resList');
-                list.innerHTML = `<div class="flex justify-between p-4 bg-[#a55c5c] text-white rounded-xl font-bold"><span>Harina (100%)</span><span>${Math.round(flour)}g</span></div>`;
+                let listHtml = `<div class="flex justify-between p-4 bg-[#a55c5c] text-white rounded-xl font-bold"><span>Harina (100%)</span><span>${Math.round(flour)}g</span></div>`;
                 
                 ings.forEach(ing => {
                     const w = (flour * ing.p) / 100;
-                    list.innerHTML += `<div class="flex justify-between px-4 py-2 border-b border-gray-100 font-medium text-gray-600"><span>${ing.n} (${ing.p}%)</span><span>${w < 10 ? w.toFixed(1) : Math.round(w)}g</span></div>`;
+                    listHtml += `<div class="flex justify-between px-4 py-2 border-b border-gray-100 font-medium text-gray-600"><span>${ing.n} (${ing.p}%)</span><span>${w < 10 ? w.toFixed(1) : Math.round(w)}g</span></div>`;
                 });
 
+                document.getElementById('resList').innerHTML = listHtml;
+                document.getElementById('btnLoader').style.display = 'none';
                 btn.disabled = false;
-                loader.style.display = 'none';
-                text.style.opacity = '1';
-            }, 600);
+            }, 500);
         }
 
         function resetApp() {
             document.getElementById('resultsCard').classList.add('hidden');
             document.getElementById('placeholder').classList.remove('hidden');
-            document.getElementById('recipeSelector').value = 'basic';
-            updateInputs();
+            init();
         }
 
-        updateInputs();
+        init();
     </script>
 </body>
 </html>
