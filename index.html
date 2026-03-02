@@ -23,19 +23,63 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 <body>
 
 <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
-    <!-- Izquierda: Calculadora -->
     <div class="lg:col-span-7 glass-card p-8 flex flex-col">
-        <!-- Contenido de recetas... igual que antes -->
+        <header class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-4xl font-black text-[#a55c5c] tracking-tight">BakingLab</h1>
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Smart Baker's Station</p>
+            </div>
+            <div id="hydBadge" class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-xs font-bold hidden border border-indigo-100"></div>
+        </header>
+
+        <div class="space-y-6">
+            <div class="flex gap-2">
+                <div class="flex-grow">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block ml-1">Receta Actual</label>
+                    <select id="recipeSelector" onchange="loadRecipe()" class="input-minimal w-full font-bold text-gray-700"></select>
+                </div>
+                <div class="flex items-end gap-2">
+                    <button onclick="openStudio()" class="btn-maroon p-3 h-[48px] w-[48px]">➕</button>
+                    <button onclick="deleteCurrentRecipe()" class="bg-gray-100 p-3 h-[48px] w-[48px] rounded-xl text-red-400 hover:bg-red-50">🗑️</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Peso Unitario (g)</label>
+                    <input type="number" id="unitWeight" value="250" class="input-minimal w-full font-bold text-lg">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Cantidad de Panes</label>
+                    <input type="number" id="quantity" value="4" class="input-minimal w-full font-bold text-lg">
+                </div>
+            </div>
+
+            <div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+
+            <div class="grid grid-cols-1 gap-4 pt-2">
+                <button onclick="calculate()" class="btn-maroon py-4 font-bold text-xl shadow-xl shadow-red-100">Calcular Ingredientes</button>
+            </div>
+
+            <div id="resultsCard" class="hidden mt-4 p-6 bg-white rounded-3xl border border-gray-100 shadow-inner">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Masa Total</p>
+                        <h2 id="resTotal" class="text-5xl font-black text-[#a55c5c] tracking-tighter">-</h2>
+                    </div>
+                </div>
+                <div id="resList" class="space-y-3"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- Derecha: Chat AI -->
     <div class="lg:col-span-5 flex flex-col gap-6">
         <div class="glass-card p-8 flex-grow flex flex-col min-h-[500px]">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 bg-[#a55c5c] rounded-full flex items-center justify-center text-white text-xl shadow-lg">✨</div>
                 <div>
                     <h3 class="font-bold text-gray-800 leading-none">Asistente AI</h3>
-                    <p class="text-[10px] text-green-500 font-bold uppercase mt-1">Modo Seguro Activo</p>
+                    <p class="text-[10px] text-green-500 font-bold uppercase mt-1">Conectado / Gemini 2.5</p>
                 </div>
             </div>
             
@@ -50,61 +94,161 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
                 </button>
             </div>
         </div>
+
+        <div class="glass-card p-8 flex flex-col items-center justify-center text-center">
+            <img src="814B52B8-868E-436C-8A11-FF1198932CA3.png" alt="Pan Artesanal" class="bread-image mb-4">
+            <p class="text-gray-400 text-xs font-medium">BakingLab Pro v4.0<br>Desarrollado con IA</p>
+        </div>
+    </div>
+</div>
+
+<div id="studioModal">
+    <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-2xl mx-4">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Nueva Receta</h2>
+        <input type="text" id="stName" placeholder="Nombre de la receta" class="input-minimal w-full mb-4 font-semibold text-center">
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="closeStudio()" class="bg-gray-100 py-3 rounded-xl font-bold text-gray-500">Cancelar</button>
+            <button onclick="saveStudio()" class="btn-maroon py-3 font-bold">Crear</button>
+        </div>
     </div>
 </div>
 
 <script>
+let recipes = JSON.parse(localStorage.getItem('bakingLab_v4')) || {
+    "Pan Blanco": [{n:'Agua', p:65}, {n:'Sal', p:2}, {n:'Levadura', p:1.2}],
+    "Pizza Napolitana": [{n:'Agua', p:70}, {n:'Sal', p:3}, {n:'Levadura', p:0.2}]
+};
+
+function init() {
+    const selector = document.getElementById('recipeSelector');
+    selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
+    loadRecipe();
+}
+
+function loadRecipe() {
+    const name = document.getElementById('recipeSelector').value;
+    const grid = document.getElementById('ingredientsGrid');
+    if(!recipes[name]) return;
+    grid.innerHTML = recipes[name].map(ing => `
+        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <label class="block text-[9px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
+            <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" class="ing-input w-full font-bold text-gray-800 outline-none text-lg">
+        </div>`).join('');
+    updateHydration(recipes[name]);
+}
+
+function updateHydration(ings) {
+    const liquidTerms = ['agua', 'leche', 'huevo', 'liquido', 'water', 'milk'];
+    const totalHyd = ings.reduce((sum, ing) => liquidTerms.some(term => ing.n.toLowerCase().includes(term)) ? sum + ing.p : sum, 0);
+    const badge = document.getElementById('hydBadge');
+    if(totalHyd > 0) {
+        badge.innerText = `Hidratación: ${totalHyd.toFixed(1)}%`;
+        badge.classList.remove('hidden');
+    } else badge.classList.add('hidden');
+}
+
 async function askAI() {
     const input = document.getElementById('aiInput');
     const chatBox = document.getElementById('chatBox');
-    if (!input.value) return;
+    if(!input.value) return;
 
     const prompt = input.value;
     chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
     input.value = "";
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const systemInstruction = "Eres un maestro panadero experto. Si el usuario pide una receta, da una breve explicación y al final añade EXACTAMENTE el código JSON precedido por 'DATA:'.";
+    const systemInstruction = `
+Eres un maestro panadero experto.
+Cuando el usuario pide una receta:
+1. Da una breve explicación de máximo 5 líneas.
+2. Luego añade EXACTAMENTE el JSON con la receta precedido de DATA: {"nombre":"Nombre","ingredients":[{"n":"Ingrediente","p":70}]}.
+La harina nunca se incluye.`;
 
     try {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: systemInstruction + " Pregunta: " + prompt }] }]
-            })
+            body: JSON.stringify({ contents: [{ parts: [{ text: systemInstruction + " Pregunta: " + prompt }] }] })
         });
-
-        // 🔹 NUEVO: mostrar error real si no hay 200 OK
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || "Error desconocido en el backend");
-        }
 
         const data = await response.json();
         let aiResponse = data.candidates[0].content.parts[0].text;
 
         if (aiResponse.includes("DATA:")) {
             const parts = aiResponse.split("DATA:");
-            const jsonStr = parts[1].trim().replace(/```json|```/g, ""); 
-            chatBox.innerHTML += `<div class="ai-bubble">${parts[0]} 
+            const jsonStr = parts[1].trim().replace(/```json|```/g, "");
+            // Formatear texto antes del JSON
+            const formattedText = parts[0].split('\n\n').map(p => `<p>${p}</p>`).join('');
+            chatBox.innerHTML += `<div class="ai-bubble">${formattedText} 
                 <button onclick='importFromAI(${jsonStr})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
-                    📥 Inyectar Receta
-                </button></div>`;
+                📥 Inyectar Receta
+                </button>
+            </div>`;
         } else {
-            chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
+            const formatted = aiResponse.split('\n\n').map(p => `<p>${p}</p>`).join('');
+            chatBox.innerHTML += `<div class="ai-bubble">${formatted}</div>`;
         }
-    } catch (e) {
-        // 🔹 NUEVO: mostrar el error real
-        chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error real: ${e.message}</div>`;
+    } catch(e) {
+        chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
     }
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function importFromAI(data) {
-    // Tu código de importación aquí
+    recipes[data.nombre] = data.ingredients;
+    localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+    init();
+    document.getElementById('recipeSelector').value = data.nombre;
+    loadRecipe();
+    calculate();
 }
-</script>
 
+function calculate() {
+    const uw = parseFloat(document.getElementById('unitWeight').value) || 0;
+    const qty = parseFloat(document.getElementById('quantity').value) || 0;
+    const totalM = uw * qty;
+    const inputs = document.querySelectorAll('.ing-input');
+    let sumP = 100;
+    let ings = [];
+    inputs.forEach(i => {
+        const p = parseFloat(i.value) || 0;
+        sumP += p;
+        ings.push({n: i.dataset.name, p: p});
+    });
+    const flour = (totalM / sumP) * 100;
+    document.getElementById('resultsCard').classList.remove('hidden');
+    document.getElementById('resTotal').innerText = Math.round(totalM) + "g";
+    let html = `<div class="flex justify-between p-4 bg-[#a55c5c] text-white rounded-2xl font-bold shadow-md"><span>Harina (100%)</span><span>${Math.round(flour)}g</span></div>`;
+    ings.forEach(ing => {
+        const w = (flour * ing.p) / 100;
+        html += `<div class="flex justify-between px-4 py-2 border-b border-gray-50 font-semibold text-gray-600"><span>${ing.n} (${ing.p}%)</span><span>${Math.round(w)}g</span></div>`;
+    });
+    document.getElementById('resList').innerHTML = html;
+}
+
+function openStudio() { document.getElementById('studioModal').style.display = 'flex'; }
+function closeStudio() { document.getElementById('studioModal').style.display = 'none'; }
+function saveStudio() {
+    const name = document.getElementById('stName').value;
+    if(name) {
+        recipes[name] = [{n:'Agua', p:65}, {n:'Sal', p:2}];
+        localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+        init();
+        document.getElementById('recipeSelector').value = name;
+        loadRecipe();
+        closeStudio();
+    }
+}
+function deleteCurrentRecipe() {
+    const name = document.getElementById('recipeSelector').value;
+    if(confirm(`¿Deseas eliminar "${name}"?`)) {
+        delete recipes[name];
+        localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+        init();
+    }
+}
+
+init();
+</script>
 </body>
 </html>
