@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 2rem; box-shadow: 0 10px 40px rgba(165, 92, 92, 0.06); }
+.glass-card { background: rgba(255,255,255,0.95); border-radius: 2rem; box-shadow: 0 10px 40px rgba(165,92,92,0.06); }
 .input-minimal { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; transition: all 0.2s; }
 .input-minimal:focus { border-color: #a55c5c; background: white; outline: none; }
 .btn-maroon { background-color: #a55c5c; color: white; transition: all 0.3s; border-radius: 12px; }
@@ -18,257 +18,252 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 .user-bubble { background: #ffffff; border-radius: 18px 18px 0 18px; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; text-align: right; border: 1px solid #e5e7eb; margin-left: auto; max-width: 80%; }
 .bread-image { max-width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
 #studioModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; align-items: center; justify-content: center; }
-.loader { display:inline-block; width:12px; height:12px; margin-right:3px; border-radius:50%; background:#a55c5c; animation: blink 0.6s infinite alternate;}
-@keyframes blink { from {opacity:0.2;} to {opacity:1;} }
+.loader { display: inline-block; width: 14px; height: 14px; border: 3px solid #a55c5c; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-left: 8px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
 <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Recetas -->
+  <div class="lg:col-span-7 glass-card p-8 flex flex-col">
+    <header class="flex justify-between items-start mb-6">
+      <div>
+        <h1 class="text-4xl font-black text-[#a55c5c] tracking-tight">BakingLab</h1>
+        <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Smart Baker's Station</p>
+      </div>
+      <div id="hydBadge" class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-xs font-bold hidden border border-indigo-100"></div>
+    </header>
 
-<!-- Panel de recetas -->
-<div class="lg:col-span-7 glass-card p-8 flex flex-col">
-<header class="flex justify-between items-start mb-6">
-<div>
-<h1 class="text-4xl font-black text-[#a55c5c] tracking-tight">BakingLab</h1>
-<p class="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Smart Baker's Station</p>
-</div>
-<div id="hydBadge" class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-xs font-bold hidden border border-indigo-100"></div>
-</header>
+    <div class="space-y-6">
+      <div class="flex gap-2">
+        <div class="flex-grow">
+          <label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block ml-1">Receta Actual</label>
+          <select id="recipeSelector" onchange="loadRecipe()" class="input-minimal w-full font-bold text-gray-700"></select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button onclick="openStudio()" class="btn-maroon p-3 h-[48px] w-[48px]">➕</button>
+          <button onclick="deleteCurrentRecipe()" class="bg-gray-100 p-3 h-[48px] w-[48px] rounded-xl text-red-400 hover:bg-red-50">🗑️</button>
+        </div>
+      </div>
 
-<div class="space-y-6">
-<div class="flex gap-2">
-<div class="flex-grow">
-<label class="text-[10px] font-bold text-gray-400 uppercase mb-2 block ml-1">Receta Actual</label>
-<select id="recipeSelector" onchange="loadRecipe()" class="input-minimal w-full font-bold text-gray-700"></select>
-</div>
-<div class="flex items-end gap-2">
-<button onclick="openStudio()" class="btn-maroon p-3 h-[48px] w-[48px]">➕</button>
-<button onclick="deleteCurrentRecipe()" class="bg-gray-100 p-3 h-[48px] w-[48px] rounded-xl text-red-400 hover:bg-red-50">🗑️</button>
-</div>
-</div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Peso Unitario (g)</label>
+          <input type="number" id="unitWeight" value="250" class="input-minimal w-full font-bold text-lg">
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Cantidad de Panes</label>
+          <input type="number" id="quantity" value="4" class="input-minimal w-full font-bold text-lg">
+        </div>
+      </div>
 
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Peso Unitario (g)</label>
-<input type="number" id="unitWeight" value="250" class="input-minimal w-full font-bold text-lg">
-</div>
-<div>
-<label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block ml-1">Cantidad de Panes</label>
-<input type="number" id="quantity" value="4" class="input-minimal w-full font-bold text-lg">
-</div>
-</div>
+      <div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
 
-<div id="ingredientsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+      <div class="grid grid-cols-1 gap-4 pt-2">
+        <button onclick="calculate()" class="btn-maroon py-4 font-bold text-xl shadow-xl shadow-red-100">Calcular Ingredientes</button>
+      </div>
 
-<div class="grid grid-cols-1 gap-4 pt-2">
-<button onclick="calculate()" class="btn-maroon py-4 font-bold text-xl shadow-xl shadow-red-100">Calcular Ingredientes</button>
-</div>
+      <div id="resultsCard" class="hidden mt-4 p-6 bg-white rounded-3xl border border-gray-100 shadow-inner">
+        <div class="flex justify-between items-end mb-6">
+          <div>
+            <p class="text-[10px] font-bold text-gray-400 uppercase">Masa Total</p>
+            <h2 id="resTotal" class="text-5xl font-black text-[#a55c5c] tracking-tighter">-</h2>
+          </div>
+        </div>
+        <div id="resList" class="space-y-3"></div>
+      </div>
+    </div>
+  </div>
 
-<div id="resultsCard" class="hidden mt-4 p-6 bg-white rounded-3xl border border-gray-100 shadow-inner">
-<div class="flex justify-between items-end mb-6">
-<div>
-<p class="text-[10px] font-bold text-gray-400 uppercase">Masa Total</p>
-<h2 id="resTotal" class="text-5xl font-black text-[#a55c5c] tracking-tighter">-</h2>
-</div>
-</div>
-<div id="resList" class="space-y-3"></div>
-</div>
-</div>
-</div>
+  <!-- Chat IA -->
+  <div class="lg:col-span-5 flex flex-col gap-6">
+    <div class="glass-card p-8 flex-grow flex flex-col min-h-[500px]">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-[#a55c5c] rounded-full flex items-center justify-center text-white text-xl shadow-lg">✨</div>
+        <div>
+          <h3 class="font-bold text-gray-800 leading-none">Asistente AI</h3>
+          <p class="text-[10px] text-green-500 font-bold uppercase mt-1">Conectado / Gemini 1.5</p>
+        </div>
+      </div>
+      
+      <div id="chatBox" class="chat-scroll flex-grow pr-2 mb-4">
+        <div class="ai-bubble">¡Hola! Soy tu experto en panadería. Pídeme una receta o pregunta cómo preparar tu pan o postre favorito.</div>
+      </div>
 
-<!-- Panel AI -->
-<div class="lg:col-span-5 flex flex-col gap-6">
-<div class="glass-card p-8 flex-grow flex flex-col min-h-[500px]">
-<div class="flex items-center gap-3 mb-6">
-<div class="w-10 h-10 bg-[#a55c5c] rounded-full flex items-center justify-center text-white text-xl shadow-lg">✨</div>
-<div>
-<h3 class="font-bold text-gray-800 leading-none">Asistente AI</h3>
-<p class="text-[10px] text-green-500 font-bold uppercase mt-1">Modo Seguro Activo</p>
-</div>
-</div>
+      <div class="relative">
+        <input type="text" id="aiInput" onkeypress="if(event.key==='Enter') askAI()" placeholder="Escribe tu duda aquí..." class="input-minimal w-full pr-12 text-sm shadow-sm">
+        <button onclick="askAI()" class="absolute right-2 top-2 bg-[#a55c5c] text-white p-2 rounded-lg hover:opacity-90">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-<div id="chatBox" class="chat-scroll flex-grow pr-2 mb-4">
-<div class="ai-bubble">¡Hola! Soy tu experto en panadería. Pídeme una receta o resuelve tus dudas técnicas.</div>
-</div>
-
-<div class="relative">
-<input type="text" id="aiInput" onkeypress="if(event.key==='Enter') askAI()" placeholder="Escribe tu duda aquí..." class="input-minimal w-full pr-12 text-sm shadow-sm">
-<button onclick="askAI()" class="absolute right-2 top-2 bg-[#a55c5c] text-white p-2 rounded-lg hover:opacity-90">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-</button>
-</div>
-</div>
-
-<div class="glass-card p-8 flex flex-col items-center justify-center text-center">
-<img src="814B52B8-868E-436C-8A11-FF1198932CA3.png" alt="Pan Artesanal" class="bread-image mb-4">
-<p class="text-gray-400 text-xs font-medium">BakingLab Pro v4.0<br>Desarrollado con IA</p>
-</div>
-</div>
+    <div class="glass-card p-8 flex flex-col items-center justify-center text-center">
+      <img src="814B52B8-868E-436C-8A11-FF1198932CA3.png" alt="Pan Artesanal" class="bread-image mb-4">
+      <p class="text-gray-400 text-xs font-medium">BakingLab Pro v4.0<br>Desarrollado con IA</p>
+    </div>
+  </div>
 </div>
 
-<!-- Modal nueva receta -->
 <div id="studioModal">
-<div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-2xl mx-4">
-<h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Nueva Receta</h2>
-<input type="text" id="stName" placeholder="Nombre de la receta" class="input-minimal w-full mb-4 font-semibold text-center">
-<div class="grid grid-cols-2 gap-3">
-<button onclick="closeStudio()" class="bg-gray-100 py-3 rounded-xl font-bold text-gray-500">Cancelar</button>
-<button onclick="saveStudio()" class="btn-maroon py-3 font-bold">Crear</button>
-</div>
-</div>
+  <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-2xl mx-4">
+    <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">Nueva Receta</h2>
+    <input type="text" id="stName" placeholder="Nombre de la receta" class="input-minimal w-full mb-4 font-semibold text-center">
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="closeStudio()" class="bg-gray-100 py-3 rounded-xl font-bold text-gray-500">Cancelar</button>
+      <button onclick="saveStudio()" class="btn-maroon py-3 font-bold">Crear</button>
+    </div>
+  </div>
 </div>
 
 <script>
 let recipes = JSON.parse(localStorage.getItem('bakingLab_v4')) || {
-    "Pan Blanco": [{n:'Agua', p:65}, {n:'Sal', p:2}, {n:'Levadura', p:1.2}],
-    "Pizza Napolitana": [{n:'Agua', p:70}, {n:'Sal', p:3}, {n:'Levadura', p:0.2}]
+  "Pan Blanco": [{n:'Agua', p:65}, {n:'Sal', p:2}, {n:'Levadura', p:1.2}],
+  "Pizza Napolitana": [{n:'Agua', p:70}, {n:'Sal', p:3}, {n:'Levadura', p:0.2}]
 };
 
-let chatHistory = [];
-let firstRecipeResponse = true; // bandera para mostrar botón solo la primera respuesta de receta
+let recentHistory = [];
 
 function init() {
-    const selector = document.getElementById('recipeSelector');
-    selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
-    loadRecipe();
+  const selector = document.getElementById('recipeSelector');
+  selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
+  loadRecipe();
 }
 
 function loadRecipe() {
-    const name = document.getElementById('recipeSelector').value;
-    const grid = document.getElementById('ingredientsGrid');
-    if(!recipes[name]) return;
-    grid.innerHTML = recipes[name].map(ing => `
+  const name = document.getElementById('recipeSelector').value;
+  const grid = document.getElementById('ingredientsGrid');
+  if(!recipes[name]) return;
+  grid.innerHTML = recipes[name].map(ing => `
     <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-        <label class="block text-[9px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
-        <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" class="ing-input w-full font-bold text-gray-800 outline-none text-lg">
+      <label class="block text-[9px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
+      <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" class="ing-input w-full font-bold text-gray-800 outline-none text-lg">
     </div>`).join('');
+  updateHydration(recipes[name]);
+}
+
+function updateHydration(ings) {
+  const liquidTerms = ['agua','leche','huevo','liquido','water','milk'];
+  const totalHyd = ings.reduce((sum, ing) => liquidTerms.some(term => ing.n.toLowerCase().includes(term)) ? sum + ing.p : sum,0);
+  const badge = document.getElementById('hydBadge');
+  if(totalHyd>0){ badge.innerText=`Hidratación: ${totalHyd.toFixed(1)}%`; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
 }
 
 async function askAI() {
-    const input = document.getElementById('aiInput');
-    const chatBox = document.getElementById('chatBox');
-    if(!input.value) return;
+  const input = document.getElementById('aiInput');
+  const chatBox = document.getElementById('chatBox');
+  if(!input.value) return;
+  
+  const prompt = input.value;
+  chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
+  input.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-    chatHistory.push({role:'user', content: input.value});
+  const loader = document.createElement('div');
+  loader.className = "ai-bubble flex items-center gap-2";
+  loader.id = "loaderBubble";
+  loader.innerHTML = `Generando respuesta... <span class="loader"></span>`;
+  chatBox.appendChild(loader);
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Limitar a últimos 7 mensajes
-    const recentHistory = chatHistory.slice(-7);
+  const systemInstruction = "Eres un maestro panadero experto. Responde la primera solicitud de receta con breve reseña, lista de ingredientes y pasos, usando porcentajes de panadero. Limita el historial a los últimos 7 mensajes. No agregues botón en respuestas de seguimiento.";
 
-    chatBox.innerHTML += `<div class="user-bubble">${input.value}</div>`;
-    input.value = "";
+  try {
+    const response = await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:recentHistory.concat([{role:'user',content:prompt}]),system_instruction:systemInstruction})
+    });
+    const data = await response.json();
+    let aiResponse = data.candidates[0].content.parts[0].text;
 
-    // Animación generando respuesta
-    const loader = document.createElement('div');
-    loader.className = 'ai-bubble';
-    loader.id = 'loadingBubble';
-    loader.innerHTML = `<span class="loader"></span><span class="loader"></span><span class="loader"></span> Generando...`;
-    chatBox.appendChild(loader);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    // Limitar historial
+    recentHistory.push({role:'user',content:prompt});
+    recentHistory.push({role:'ai',content:aiResponse});
+    if(recentHistory.length>14) recentHistory = recentHistory.slice(-14);
 
-    const systemInstruction = `
-Eres un maestro panadero experto.
-Cuando el usuario pida una receta, responde así:
-1. Breve reseña (máx 2 líneas)
-2. Lista de ingredientes visibles
-3. Lista de pasos numerados
-Solo muestra el botón 'Agregar a mis recetas' en la primera respuesta de la receta.
-Limita historial a los últimos 7 mensajes.
-`;
+    // Mostrar respuesta
+    loader.remove();
 
-    try {
-        const response = await fetch('/api/chat', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-                contents: recentHistory.map(msg => ({parts:[{text: msg.content}]})),
-                system_instruction: systemInstruction
-            })
-        });
-        const data = await response.json();
-        let aiResponse = data.candidates[0].content.parts[0].text;
-
-        // eliminar loader
-        document.getElementById('loadingBubble').remove();
-
-        // Detectar si hay DATA y es primera respuesta de receta
-        if(firstRecipeResponse && aiResponse.includes("DATA:")) {
-            const parts = aiResponse.split("DATA:");
-            const jsonStr = parts[1].trim().replace(/```json|```/g,"");
-            chatBox.innerHTML += `<div class="ai-bubble">${parts[0]}
-<button onclick='importFromAI(${jsonStr})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
-📥 Agregar a mis recetas
-</button>
-</div>`;
-            firstRecipeResponse = false;
-        } else {
-            chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
-        }
-
-        chatHistory.push({role:'assistant', content: aiResponse});
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-    } catch(e) {
-        document.getElementById('loadingBubble').remove();
-        chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor.</div>`;
+    if(aiResponse.includes("DATA:") && recentHistory.filter(m=>m.role==='user').length===1){
+      const parts = aiResponse.split("DATA:");
+      const jsonStr = parts[1].trim().replace(/```json|```/g,"");
+      chatBox.innerHTML += `<div class="ai-bubble">${parts[0]} 
+        <button onclick='importFromAI(${jsonStr})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
+          📥 Agregar a mis recetas
+        </button></div>`;
+    } else {
+      chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
     }
+
+  } catch(e){
+    document.getElementById('loaderBubble').remove();
+    chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+  }
+
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function importFromAI(data){
-    recipes[data.nombre] = data.ingredients;
-    localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
-    init();
-    document.getElementById('recipeSelector').value = data.nombre;
-    loadRecipe();
-    calculate();
+  recipes[data.nombre] = data.ingredients;
+  localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+  init();
+  document.getElementById('recipeSelector').value = data.nombre;
+  loadRecipe();
+  calculate();
 }
 
 function calculate() {
-    const uw = parseFloat(document.getElementById('unitWeight').value) || 0;
-    const qty = parseFloat(document.getElementById('quantity').value) || 0;
-    const totalM = uw * qty;
-    const inputs = document.querySelectorAll('.ing-input');
-    let sumP = 100;
-    let ings = [];
-    inputs.forEach(i => {
-        const p = parseFloat(i.value) || 0;
-        sumP += p;
-        ings.push({n:i.dataset.name,p:p});
-    });
-    const flour = (totalM/sumP)*100;
-    document.getElementById('resultsCard').classList.remove('hidden');
-    document.getElementById('resTotal').innerText = Math.round(totalM)+"g";
-    let html = `<div class="flex justify-between p-4 bg-[#a55c5c] text-white rounded-2xl font-bold shadow-md"><span>Harina (100%)</span><span>${Math.round(flour)}g</span></div>`;
-    ings.forEach(ing=>{
-        const w=(flour*ing.p)/100;
-        html+=`<div class="flex justify-between px-4 py-2 border-b border-gray-50 font-semibold text-gray-600"><span>${ing.n} (${ing.p}%)</span><span>${Math.round(w)}g</span></div>`;
-    });
-    document.getElementById('resList').innerHTML=html;
+  const uw = parseFloat(document.getElementById('unitWeight').value) || 0;
+  const qty = parseFloat(document.getElementById('quantity').value) || 0;
+  const totalM = uw*qty;
+  const inputs = document.querySelectorAll('.ing-input');
+  let sumP = 100;
+  let ings = [];
+  inputs.forEach(i=>{
+    const p=parseFloat(i.value)||0;
+    sumP+=p;
+    ings.push({n:i.dataset.name,p});
+  });
+  const flour = (totalM/sumP)*100;
+  document.getElementById('resultsCard').classList.remove('hidden');
+  document.getElementById('resTotal').innerText = Math.round(totalM)+"g";
+  let html=`<div class="flex justify-between p-4 bg-[#a55c5c] text-white rounded-2xl font-bold shadow-md"><span>Harina (100%)</span><span>${Math.round(flour)}g</span></div>`;
+  ings.forEach(ing=>{
+    const w=(flour*ing.p)/100;
+    html+=`<div class="flex justify-between px-4 py-2 border-b border-gray-50 font-semibold text-gray-600"><span>${ing.n} (${ing.p}%)</span><span>${Math.round(w)}g</span></div>`;
+  });
+  document.getElementById('resList').innerHTML=html;
 }
 
 function openStudio(){document.getElementById('studioModal').style.display='flex';}
 function closeStudio(){document.getElementById('studioModal').style.display='none';}
 function saveStudio(){
-    const name=document.getElementById('stName').value;
-    if(name){
-        recipes[name] = [{n:'Agua',p:65},{n:'Sal',p:2}];
-        localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
-        init();
-        document.getElementById('recipeSelector').value=name;
-        loadRecipe();
-        closeStudio();
-    }
+  const name=document.getElementById('stName').value;
+  if(name){
+    recipes[name]=[{n:'Agua',p:65},{n:'Sal',p:2}];
+    localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
+    init();
+    document.getElementById('recipeSelector').value=name;
+    loadRecipe();
+    closeStudio();
+  }
 }
-
 function deleteCurrentRecipe(){
-    const name=document.getElementById('recipeSelector').value;
-    if(confirm(`¿Deseas eliminar "${name}"?`)){
-        delete recipes[name];
-        localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
-        init();
-    }
+  const name=document.getElementById('recipeSelector').value;
+  if(confirm(`¿Deseas eliminar "${name}"?`)){
+    delete recipes[name];
+    localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
+    init();
+  }
 }
 
 init();
 </script>
+
 </body>
 </html>
