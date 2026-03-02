@@ -160,13 +160,12 @@ const prompt = input.value;
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
 chatHistory.push({ role: 'user', content: prompt });
 input.value = "";
-chatBox.scrollTop = chatBox.scrollHeight;
 
 const typingBubble = document.createElement('div');
 typingBubble.className = 'ai-bubble';
 typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span> Generando respuesta...</div>';
 chatBox.appendChild(typingBubble);
-chatBox.scrollTop = chatBox.scrollHeight;
+typingBubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
 const systemInstruction = `Eres un maestro panadero experto.
 Cuando el usuario pide una receta por primera vez, responde:
@@ -193,32 +192,38 @@ let aiResponse = data.candidates[0].content.parts[0].text;
 
 typingBubble.remove();
 
+let bubble = document.createElement('div');
+bubble.className = 'ai-bubble';
+
 if(aiResponse.includes("DATA:")){
 const parts = aiResponse.split("DATA:");
 const displayText = parts[0].trim();
 const jsonStr = parts[1].trim().replace(/```json|```/g,"");
 const recipeData = JSON.parse(jsonStr);
 
-const bubble = document.createElement('div');
-bubble.className = 'ai-bubble';
 bubble.innerHTML = `${displayText}
 <button onclick='addRecipe(${JSON.stringify(recipeData)})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
 ➕ Agregar a mis recetas
 </button>`;
-chatBox.appendChild(bubble);
 chatHistory.push({role:'assistant', content:displayText});
 }else{
-chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
+bubble.innerHTML = aiResponse;
 chatHistory.push({role:'assistant', content:aiResponse});
 }
 
-// Limitar historial a últimos 7 mensajes
-if(chatHistory.length > 7) chatHistory = chatHistory.slice(chatHistory.length-7);
+chatBox.appendChild(bubble);
+bubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-chatBox.scrollTop = chatBox.scrollHeight;
+if(chatHistory.length > 7)
+chatHistory = chatHistory.slice(chatHistory.length-7);
+
 }catch(e){
 typingBubble.remove();
-chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+const errorBubble = document.createElement('div');
+errorBubble.className = 'ai-bubble text-red-500';
+errorBubble.innerText = "Error: No se pudo conectar con el servidor. Revisa Vercel.";
+chatBox.appendChild(errorBubble);
+errorBubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 }
 
