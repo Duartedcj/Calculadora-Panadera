@@ -18,8 +18,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 .user-bubble { background: #ffffff; border-radius: 18px 18px 0 18px; padding: 12px; font-size: 0.85rem; margin-bottom: 12px; text-align: right; border: 1px solid #e5e7eb; margin-left: auto; max-width: 80%; word-break: break-word; }
 .bread-image { max-width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
 #studioModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; align-items: center; justify-content: center; }
-.loader { display:inline-block; width:10px; height:10px; border-radius:50%; background:#a55c5c; animation:blink 1s infinite alternate; }
-@keyframes blink { 0%{opacity:0.2;} 100%{opacity:1;} }
+#loadingAI { display: none; text-align: center; font-weight: bold; color: #a55c5c; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -84,6 +83,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 </div>
 </div>
 
+<div id="loadingAI">Generando respuesta...</div>
 <div id="chatBox" class="chat-scroll flex-grow pr-2 mb-4">
 <div class="ai-bubble">¡Hola! Soy tu experto en panadería. Pídeme una receta o hazme preguntas técnicas sobre el horneado, ingredientes y procesos.</div>
 </div>
@@ -124,15 +124,15 @@ let chatHistory = [];
 
 function init() {
 const selector = document.getElementById('recipeSelector');
-selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
+selector.innerHTML = Object.keys(recipes).map(r=>`<option value="${r}">${r}</option>`).join('');
 loadRecipe();
 }
 
 function loadRecipe() {
-const name = document.getElementById('recipeSelector').value;
-const grid = document.getElementById('ingredientsGrid');
+const name=document.getElementById('recipeSelector').value;
+const grid=document.getElementById('ingredientsGrid');
 if(!recipes[name]) return;
-grid.innerHTML = recipes[name].map(ing => `
+grid.innerHTML=recipes[name].map(ing=>`
 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
 <label class="block text-[9px] uppercase font-bold text-gray-400 mb-1">${ing.n} %</label>
 <input type="number" step="0.1" value="${ing.p}" data-name="${ing.n}" class="ing-input w-full font-bold text-gray-800 outline-none text-lg">
@@ -141,39 +141,34 @@ updateHydration(recipes[name]);
 }
 
 function updateHydration(ings) {
-const liquidTerms = ['agua','leche','huevo','liquido','water','milk'];
-const totalHyd = ings.reduce((sum, ing) => liquidTerms.some(term=>ing.n.toLowerCase().includes(term))?sum+ing.p:sum,0);
-const badge = document.getElementById('hydBadge');
+const liquidTerms=['agua','leche','huevo','liquido','water','milk'];
+const totalHyd=ings.reduce((sum,ing)=>liquidTerms.some(term=>ing.n.toLowerCase().includes(term))?sum+ing.p:sum,0);
+const badge=document.getElementById('hydBadge');
 if(totalHyd>0){ badge.innerText=`Hidratación: ${totalHyd.toFixed(1)}%`; badge.classList.remove('hidden'); }
-else { badge.classList.add('hidden'); }
+else{ badge.classList.add('hidden'); }
 }
 
-async function askAI() {
-const input = document.getElementById('aiInput');
-const chatBox = document.getElementById('chatBox');
+async function askAI(){
+const input=document.getElementById('aiInput');
+const chatBox=document.getElementById('chatBox');
+const loading=document.getElementById('loadingAI');
 if(!input.value) return;
 
-const prompt = input.value;
-chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
+const prompt=input.value;
+chatBox.innerHTML+=`<div class="user-bubble">${prompt}</div>`;
 chatHistory.push({role:'user', content:prompt});
-input.value = "";
-chatBox.scrollTop = chatBox.scrollHeight;
+input.value="";
+chatBox.scrollTop=chatBox.scrollHeight;
 
-// Mostrar loader
-const loader = document.createElement('div');
-loader.className="ai-bubble flex items-center gap-2";
-loader.id="loaderBubble";
-loader.innerHTML=`IA escribiendo... <span class="loader"></span>`;
-chatBox.appendChild(loader);
-chatBox.scrollTop = chatBox.scrollHeight;
+loading.style.display='block';
 
-const systemInstruction = `Eres un maestro panadero experto.
+const systemInstruction=`Eres un maestro panadero experto.
 Responde cualquier pregunta del usuario sobre panadería, horneado, ingredientes o técnicas.
 Si el usuario pide una receta, da primero una breve explicación y luego un JSON con DATA: {"nombre":"Nombre","ingredients":[{"n":"Ingrediente","p":70}]}.
 La harina siempre es 100% y no se incluye en el JSON.`;
 
-try {
-const response = await fetch('/api/chat', {
+try{
+const response=await fetch('/api/chat',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
@@ -183,56 +178,61 @@ contents:[
 ]
 })
 });
-const data = await response.json();
-loader.remove(); // quitar loader
-let aiResponse = data.candidates[0].content.parts[0].text;
+const data=await response.json();
+let aiResponse=data.candidates[0].content.parts[0].text;
+loading.style.display='none';
 
 // Separar DATA si existe
 if(aiResponse.includes("DATA:")){
-const parts = aiResponse.split("DATA:");
-const jsonStr = parts[1].trim().replace(/```json|```/g,"");
+const parts=aiResponse.split("DATA:");
+const jsonStr=parts[1].trim().replace(/```json|```/g,"");
+const dataObj=JSON.parse(jsonStr);
 
-// Mostrar botón solo si es la primera receta
+const bubble=document.createElement('div');
+bubble.className='ai-bubble';
+bubble.innerHTML=parts[0];
+chatBox.appendChild(bubble);
+
+// Solo agregar botón si es la primera interacción de receta
 if(chatHistory.filter(m=>m.role==='user').length===1){
-chatBox.innerHTML += `<div class="ai-bubble">${parts[0]} 
-<button onclick='importFromAI(${jsonStr})' class="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase">
-📥 Agregar a mis recetas
-</button></div>`;
-} else {
-chatBox.innerHTML += `<div class="ai-bubble">${parts[0]}</div>`;
+const btn=document.createElement('button');
+btn.className="mt-3 w-full bg-[#a55c5c] text-white text-[10px] py-2 rounded-xl font-black uppercase";
+btn.textContent="📥 Agregar a mis recetas";
+btn.onclick=()=>importFromAI(dataObj);
+bubble.appendChild(btn);
 }
 
 chatHistory.push({role:'assistant', content:parts[0]});
 }else{
-chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
+chatBox.innerHTML+=`<div class="ai-bubble">${aiResponse}</div>`;
 chatHistory.push({role:'assistant', content:aiResponse});
 }
 
-// Limitar historial a los últimos 7 mensajes
-if(chatHistory.length>14) chatHistory = chatHistory.slice(chatHistory.length-14);
+// Limitar historial a últimos 7 mensajes
+if(chatHistory.length>14) chatHistory=chatHistory.slice(chatHistory.length-14);
 
-chatBox.scrollTop = chatBox.scrollHeight;
+chatBox.scrollTop=chatBox.scrollHeight;
 }catch(e){
-loader.remove();
-chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+loading.style.display='none';
+chatBox.innerHTML+=`<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
 }
 }
 
 function importFromAI(data){
-recipes[data.nombre] = data.ingredients;
-localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+recipes[data.nombre]=data.ingredients;
+localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
 init();
-document.getElementById('recipeSelector').value = data.nombre;
+document.getElementById('recipeSelector').value=data.nombre;
 loadRecipe();
 calculate();
 chatHistory.push({role:'assistant', content:`Receta ${data.nombre} agregada`});
 }
 
 function calculate(){
-const uw = parseFloat(document.getElementById('unitWeight').value)||0;
-const qty = parseFloat(document.getElementById('quantity').value)||0;
-const totalM = uw*qty;
-const inputs = document.querySelectorAll('.ing-input');
+const uw=parseFloat(document.getElementById('unitWeight').value)||0;
+const qty=parseFloat(document.getElementById('quantity').value)||0;
+const totalM=uw*qty;
+const inputs=document.querySelectorAll('.ing-input');
 let sumP=100;
 let ings=[];
 inputs.forEach(i=>{
@@ -257,21 +257,23 @@ function saveStudio(){
 const name=document.getElementById('stName').value;
 if(name){
 recipes[name]=[{n:'Agua',p:65},{n:'Sal',p:2}];
-localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
 init();
 document.getElementById('recipeSelector').value=name;
 loadRecipe();
 closeStudio();
 }
 }
+
 function deleteCurrentRecipe(){
 const name=document.getElementById('recipeSelector').value;
 if(confirm(`¿Deseas eliminar "${name}"?`)){
 delete recipes[name];
-localStorage.setItem('bakingLab_v4', JSON.stringify(recipes));
+localStorage.setItem('bakingLab_v4',JSON.stringify(recipes));
 init();
 }
 }
+
 init();
 </script>
 </body>
