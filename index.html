@@ -124,20 +124,20 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; 
 </div>
 
 <script>
-// --- RECETAS PREDEFINIDAS ---
+// RECETAS PREDEFINIDAS
 let recipes = {
 "Pan Blanco":[{n:'Agua',p:65},{n:'Sal',p:2},{n:'Levadura',p:1.2}],
 "Pizza Napolitana":[{n:'Agua',p:70},{n:'Sal',p:3},{n:'Levadura',p:0.2}]
 };
 
-// --- INICIALIZAR ---
+let chatHistory = []; // historial de chat
+
 function init() {
 const selector = document.getElementById('recipeSelector');
 selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
 loadRecipe();
 }
 
-// --- CARGAR RECETA ---
 function loadRecipe() {
 const name = document.getElementById('recipeSelector').value;
 const grid = document.getElementById('ingredientsGrid');
@@ -150,7 +150,6 @@ grid.innerHTML = recipes[name].map(ing => `
 updateHydration(recipes[name]);
 }
 
-// --- HIDRATACIÓN ---
 function updateHydration(ings) {
 const liquidTerms = ['agua','leche','huevo','liquido','water','milk'];
 const totalHyd = ings.reduce((sum, ing) => liquidTerms.some(term=>ing.n.toLowerCase().includes(term))?sum+ing.p:sum,0);
@@ -159,30 +158,31 @@ if(totalHyd>0){ badge.innerText=`Hidratación: ${totalHyd.toFixed(1)}%`; badge.c
 else { badge.classList.add('hidden'); }
 }
 
-// --- CHAT ---
+// CHAT CON HISTORIAL Y BOTÓN FUNCIONAL
 async function askAI() {
 const input = document.getElementById('aiInput');
 const chatBox = document.getElementById('chatBox');
 if (!input.value) return;
+
 const prompt = input.value;
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
+chatHistory.push({ role: 'user', content: prompt });
 input.value = "";
 chatBox.scrollTop = chatBox.scrollHeight;
 
-// --- BURBUJA DE TYPING ---
 const typingBubble = document.createElement('div');
 typingBubble.className = 'ai-bubble';
 typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span> Generando respuesta...</div>';
 chatBox.appendChild(typingBubble);
 chatBox.scrollTop = chatBox.scrollHeight;
 
+// Sistema instrucción para IA
 const systemInstruction = `Eres un maestro panadero experto.
 Cuando el usuario pide una receta por primera vez, responde:
-1) Breve introducción (máx 1 línea).
+1) Breve reseña/introducción (máx 1 línea).
 2) Lista de ingredientes con proporciones visibles.
 Adjunta al final un JSON: DATA: {"nombre":"Nombre","ingredients":[{"n":"Ingrediente","p":70}]}.
-Después pregunta si desea los pasos de elaboración y, si la respuesta es sí, los lista paso a paso enumerados.
-La harina siempre es 100% y no se incluye en el JSON.`;
+Luego pregunta al usuario si desea que muestres los pasos para elaborar la receta. La harina siempre es 100% y no se incluye en el JSON.`;
 
 try {
 const response = await fetch('/api/chat', {
@@ -191,7 +191,7 @@ headers: {'Content-Type':'application/json'},
 body: JSON.stringify({
 contents:[
 {parts:[{text:systemInstruction}]},
-{parts:[{text:prompt}]}
+...chatHistory.map(msg=>({parts:[{text:msg.content}]}))
 ]
 })
 });
@@ -201,7 +201,7 @@ let aiResponse = data.candidates[0].content.parts[0].text;
 
 typingBubble.remove();
 
-// --- SI HAY RECETA EN JSON ---
+// Manejo DATA
 if(aiResponse.includes("DATA:")){
 const parts = aiResponse.split("DATA:");
 const displayText = parts[0].trim();
@@ -211,23 +211,26 @@ const recipeData = JSON.parse(jsonStr);
 const bubble = document.createElement('div');
 bubble.className = 'ai-bubble';
 bubble.innerHTML = `${displayText}
-<button onclick='addRecipe(${JSON.stringify(recipeData)})' class="mt-3 w-full bg-[#a55c5c] text-white py-2 rounded-xl font-bold uppercase flex items-center justify-center gap-2 hover:bg-[#8b4a4a]">
+<button onclick='addRecipe(${JSON.stringify(recipeData)})' 
+        class="mt-3 w-full bg-[#a55c5c] text-white py-2 rounded-xl font-bold uppercase flex items-center justify-center gap-2 hover:bg-[#8b4a4a]">
   <span class="text-lg">➕</span>
   <span class="text-sm">Agregar a mis recetas</span>
 </button>`;
 chatBox.appendChild(bubble);
+chatHistory.push({ role: 'assistant', content: displayText });
 }else{
 chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
+chatHistory.push({ role: 'assistant', content: aiResponse });
 }
 
 chatBox.scrollTop = chatBox.scrollHeight;
 }catch(e){
 typingBubble.remove();
-chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor.</div>`;
 }
 }
 
-// --- AGREGAR RECETA MANUAL ---
+// AGREGAR RECETA MANUAL
 function addRecipe(data){
 recipes[data.nombre] = data.ingredients;
 init();
@@ -237,7 +240,7 @@ calculate();
 alert(`Receta "${data.nombre}" agregada a tus recetas.`);
 }
 
-// --- CÁLCULO MASA ---
+// CALCULO MASA
 function calculate(){
 const uw=parseFloat(document.getElementById('unitWeight').value)||0;
 const qty=parseFloat(document.getElementById('quantity').value)||0;
@@ -261,7 +264,7 @@ html+=`<div class="flex justify-between px-4 py-2 border-b border-gray-50 font-s
 document.getElementById('resList').innerHTML=html;
 }
 
-// --- MODAL NUEVA RECETA ---
+// MODAL NUEVA RECETA
 function openStudio(){document.getElementById('studioModal').style.display='flex';}
 function closeStudio(){document.getElementById('studioModal').style.display='none';}
 function saveStudio(){
@@ -275,7 +278,7 @@ closeStudio();
 }
 }
 
-// --- ELIMINAR RECETA ---
+// ELIMINAR RECETA
 function deleteCurrentRecipe(){
 const name=document.getElementById('recipeSelector').value;
 if(confirm(`¿Deseas eliminar "${name}"?`)){
