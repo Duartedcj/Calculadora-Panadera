@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -154,9 +155,9 @@ else { badge.classList.add('hidden'); }
 async function askAI() {
 const input = document.getElementById('aiInput');
 const chatBox = document.getElementById('chatBox');
-if (!input.value) return;
+if (!input.value.trim()) return;
 
-const prompt = input.value;
+const prompt = input.value.trim();
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
 chatHistory.push({ role: 'user', content: prompt });
 input.value = "";
@@ -170,7 +171,7 @@ chatBox.scrollTop = chatBox.scrollHeight;
 
 const systemInstruction = `Eres un maestro panadero experto.
 Cuando el usuario pide una receta por primera vez, responde:
-1) Breve reseña/intoducción (máx 2 líneas).
+1) Breve reseña/introducción (máx 2 líneas).
 2) Lista de ingredientes en texto visible.
 3) Pasos numerados claros para elaborar la receta.
 Adjunta al final un JSON: DATA: {"nombre":"Nombre","ingredients":[{"n":"Ingrediente","p":70}]}.
@@ -181,14 +182,26 @@ const response = await fetch('/api/chat', {
 method: 'POST',
 headers: {'Content-Type':'application/json'},
 body: JSON.stringify({
-contents:[
-{parts:[{text:systemInstruction}]},
-...chatHistory.map(msg => ({parts:[{text:msg.content}]}))
-]
+system_instruction: {
+parts: [{ text: systemInstruction }]
+},
+contents: chatHistory.map(msg => ({
+role: msg.role === 'user' ? 'user' : 'model',
+parts: [{ text: msg.content }]
+}))
 })
 });
 
+if (!response.ok) {
+throw new Error(`HTTP ${response.status}`);
+}
+
 const data = await response.json();
+
+if (data.error) {
+throw new Error(data.error);
+}
+
 let aiResponse = data.candidates[0].content.parts[0].text;
 
 typingBubble.remove();
@@ -197,8 +210,8 @@ if(aiResponse.includes("DATA:")){
 const parts = aiResponse.split("DATA:");
 const displayText = parts[0].trim();
 const jsonStr = parts[1].trim().replace(/```json|```/g,"");
+try {
 const recipeData = JSON.parse(jsonStr);
-
 const bubble = document.createElement('div');
 bubble.className = 'ai-bubble';
 bubble.innerHTML = `${displayText}
@@ -207,18 +220,22 @@ bubble.innerHTML = `${displayText}
 </button>`;
 chatBox.appendChild(bubble);
 chatHistory.push({role:'assistant', content:displayText});
-}else{
+} catch(e) {
+chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
+chatHistory.push({role:'assistant', content:aiResponse});
+}
+} else {
 chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
 chatHistory.push({role:'assistant', content:aiResponse});
 }
 
-// Limitar historial a últimos 7 mensajes
 if(chatHistory.length > 7) chatHistory = chatHistory.slice(chatHistory.length-7);
-
 chatBox.scrollTop = chatBox.scrollHeight;
-}catch(e){
+
+} catch(e) {
 typingBubble.remove();
-chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: ${e.message}</div>`;
+chatBox.scrollTop = chatBox.scrollHeight;
 }
 }
 
@@ -278,5 +295,6 @@ init();
 }
 init();
 </script>
+
 </body>
 </html>
