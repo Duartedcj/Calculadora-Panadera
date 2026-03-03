@@ -1,10 +1,8 @@
 {
   "name": "calculadora-panadera",
   "version": "1.0.0",
+  "type": "module",
   "engines": {
     "node": "24.x"
-  },
-  "scripts": {
-    "build": "echo ok"
   }
 }
