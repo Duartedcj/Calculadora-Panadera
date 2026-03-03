@@ -165,13 +165,13 @@ if (!input.value) return;
 const prompt = input.value;
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
 input.value = "";
-chatBox.scrollTop = chatBox.scrollHeight;
+//chatBox.scrollTop = chatBox.scrollHeight;
 
 const typingBubble = document.createElement('div');
 typingBubble.className = 'ai-bubble';
 typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span> Generando respuesta...</div>';
 chatBox.appendChild(typingBubble);
-chatBox.scrollTop = chatBox.scrollHeight;
+//chatBox.scrollTop = chatBox.scrollHeight;
 
 const systemInstruction = `Eres un maestro panadero experto.
 Cuando el usuario pide una receta por primera vez, responde:
@@ -216,7 +216,7 @@ chatBox.appendChild(bubble);
 chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
 }
 
-chatBox.scrollTop = chatBox.scrollHeight;
+//chatBox.scrollTop = chatBox.scrollHeight;
 }catch(e){
 typingBubble.remove();
 chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
