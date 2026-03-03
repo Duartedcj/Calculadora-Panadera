@@ -123,8 +123,6 @@ let recipes = JSON.parse(localStorage.getItem('bakingLab_v4')) || {
 "Pizza Napolitana":[{n:'Agua',p:70},{n:'Sal',p:3},{n:'Levadura',p:0.2}]
 };
 
-let chatHistory = [];
-
 function init() {
 const selector = document.getElementById('recipeSelector');
 selector.innerHTML = Object.keys(recipes).map(r => `<option value="${r}">${r}</option>`).join('');
@@ -158,7 +156,6 @@ if (!input.value) return;
 
 const prompt = input.value;
 chatBox.innerHTML += `<div class="user-bubble">${prompt}</div>`;
-chatHistory.push({ role: 'user', content: prompt });
 input.value = "";
 chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -183,15 +180,20 @@ headers: {'Content-Type':'application/json'},
 body: JSON.stringify({
 contents:[
 {parts:[{text:systemInstruction}]},
-...chatHistory.map(msg => ({parts:[{text:msg.content}]}))
+{parts:[{text:prompt}]}
 ]
 })
 });
 
 const data = await response.json();
-let aiResponse = data.candidates[0].content.parts[0].text;
-
 typingBubble.remove();
+
+if (!data.candidates) {
+chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error en respuesta del servidor.</div>`;
+return;
+}
+
+let aiResponse = data.candidates[0].content.parts[0].text;
 
 if(aiResponse.includes("DATA:")){
 const parts = aiResponse.split("DATA:");
@@ -206,19 +208,15 @@ bubble.innerHTML = `${displayText}
 ➕ Agregar a mis recetas
 </button>`;
 chatBox.appendChild(bubble);
-chatHistory.push({role:'assistant', content:displayText});
 }else{
 chatBox.innerHTML += `<div class="ai-bubble">${aiResponse}</div>`;
-chatHistory.push({role:'assistant', content:aiResponse});
 }
 
-// Limitar historial a últimos 7 mensajes
-if(chatHistory.length > 7) chatHistory = chatHistory.slice(chatHistory.length-7);
-
 chatBox.scrollTop = chatBox.scrollHeight;
+
 }catch(e){
 typingBubble.remove();
-chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor. Revisa Vercel.</div>`;
+chatBox.innerHTML += `<div class="ai-bubble text-red-500">Error: No se pudo conectar con el servidor.</div>`;
 }
 }
 
